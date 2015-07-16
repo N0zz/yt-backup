@@ -1,0 +1,6 @@
+# Ignore everything(new folders for each yt account and downloaded movies)
+*
+# Except source files and readme
+!.gitignore
+!yt.sh
+!README.md
