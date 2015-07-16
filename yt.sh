@@ -18,7 +18,7 @@ api_key='AIzaSyDucw5w8r6mhTtXRhdzwsDLj3WYmeRpkZk'
 
 # max vids is 50 for now, if you want more google api
 # requires to use nextPageToken to get new page of videos
-max_vids=5
+max_vids=50
 
 echo "Enter youtube user name:"
 read user_name
@@ -40,8 +40,7 @@ done
 
 if (( $count > $max_vids ))
 then
-  echo "Defaulting videos count to "$max_vids".
-  You can download maximum "$max_vids" videos."
+  echo "Defaulting videos count to "$max_vids". You can download maximum "$max_vids" videos."
   count=$max_vids
 fi
 
