@@ -110,10 +110,10 @@ download_vids(){
     then
       if [ "$current_vid" != null ]
       then
-        youtube-dl "$@" http://youtube.com/watch?v=$current_vid
         ((d_cnt++))
         echo " "
         echo "Downloading "$current_vid"("$d_cnt"/"$count")."
+        youtube-dl "$@" http://youtube.com/watch?v=$current_vid
       fi
     fi
   done
