@@ -96,6 +96,17 @@ create_directory(){
   cd $dir
 }
 
+calculate_time_left(){
+  time_now=$(date +%s)
+  time_from_start=$(($time_now-$start))
+  avg_time=$(($time_from_start/$d_cnt))
+  vids_left=$(($count-$d_cnt))
+  time_left=$(($avg_time*($vids_left+1)))
+  
+  ((sec=time_left%60, time_left/=60, min=time_left%60, hrs=time_left/60))
+  eta=$(printf "%d:%02d:%02d" $hrs $min $sec)
+}
+
 download_vids(){
   # Downloads all vids from the list one after another
   
@@ -116,12 +127,10 @@ download_vids(){
       if [ "$current_vid" != null ]
       then
         ((d_cnt++))
-        time_now=$(date +%s)
-        time_from_start=$(($time_now-$start))
-        avg_time=$(($time_from_start/$d_cnt))
-        vids_left=$(($count-$d_cnt))
-        time_left=$(($avg_time*($vids_left+1)))
-        echo -e "Downloading "$current_vid"("$d_cnt"/"$count"). ETA: "$time_left" AVG: "$avg_time"\r"
+        
+        calculate_time_left
+        
+        echo -ne "Downloading "$current_vid"("$d_cnt"/"$count") ETA: "$eta"\r"
         youtube-dl "$@" -q --console-title http://youtube.com/watch?v=$current_vid
       fi
     fi
@@ -130,6 +139,10 @@ download_vids(){
 
 echo_final_info(){
   # Prints info about downloaded/not downloaded videos and lists them
+ 
+  ((sec=time_from_start%60, time_from_start/=60, min=time_from_start%60, hrs=time_from_start/60))
+  total_time=$(printf "%d hours %02d minutes and %02d seconds" $hrs $min $sec)
+  
   if [ -z "$d_cnt" ]
   then
     echo 'Could not download any video. Does this channel exist?'
@@ -137,12 +150,12 @@ echo_final_info(){
     rmdir $dir
   elif ((  $d_cnt < $count ))
   then
-    echo 'You have downloaded '$d_cnt' videos instead of '$count'. This channel does not have more vidoes uploaded. Downloaded videos:'
-    ls
+    echo 'You have downloaded '$d_cnt' instead of '$count' videos in '$total_time'. This channel does not have more vidoes uploaded. Downloaded videos:'
+    ls -1
     cd ..
   else
-    echo 'You have downloaded '$d_cnt' videos. Videos list:'
-    ls
+    echo 'You have downloaded '$d_cnt' videos in '$total_time'. Videos list:'
+    ls -1
     cd ..
   fi
 }
