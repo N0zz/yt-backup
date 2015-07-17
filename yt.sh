@@ -182,9 +182,13 @@ echo_final_info(){
   fi
 }
 
-read_data
-request_uploads_key
-request_vids_list
-create_directory
-download_vids
-echo_final_info
+main(){
+  read_data
+  request_uploads_key
+  request_vids_list
+  create_directory
+  download_vids
+  echo_final_info
+}
+
+main
