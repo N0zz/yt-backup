@@ -22,7 +22,7 @@ api_version='v3'
 # max vids is 50 for now, if you want more google api
 # requires to use nextPageToken to get new page of videos
 #max_vids=50
-vids_per_page=10
+vids_per_page=5
 
 read_data(){
   # Get channel name and videos count
@@ -74,15 +74,17 @@ request_vids_list(){
       ((saved_vids++))
     done
 
-    echo "Fetching channel videos... ("$saved_vids"/"$count")"
-    
+    echo -ne "Fetching channel vids ("$saved_vids"/"$count")...\r"
+
+  
     if (( $count < $saved_vids ))
     then
       done="true"
-      for v in ${!vids_queue[*]}
-      do
-        printf "%d:%s\n" $v ${vids_queue[$v]}
-      done
+      # Prints videos list for debugging purposes  
+#     for v in ${!vids_queue[*]}
+#     do
+#       printf "%d:%s\n" $v ${vids_queue[$v]}
+#     done
     fi
   done
 }
@@ -111,9 +113,8 @@ download_vids(){
       if [ "$current_vid" != null ]
       then
         ((d_cnt++))
-        echo " "
-        echo "Downloading "$current_vid"("$d_cnt"/"$count")."
-        youtube-dl "$@" http://youtube.com/watch?v=$current_vid
+        echo -ne "Downloading "$current_vid"("$d_cnt"/"$count")...\r"
+        youtube-dl "$@" -q --console-title http://youtube.com/watch?v=$current_vid
       fi
     fi
   done
