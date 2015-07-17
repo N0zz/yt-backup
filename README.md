@@ -2,7 +2,7 @@
 Simple youtube movies backup script.
 
 # Usage
-http://showterm.io/808224bad074161cb039b
+http://showterm.io/fc8cb3c2f320c3301f693
 
 # Info
 Using jq to decode json data from google api.  
