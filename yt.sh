@@ -16,9 +16,13 @@
 #  https://console.developers.google.com/project
 api_key='AIzaSyDucw5w8r6mhTtXRhdzwsDLj3WYmeRpkZk'
 
+api_base='https://www.googleapis.com/youtube'
+api_version='v3'
+
 # max vids is 50 for now, if you want more google api
 # requires to use nextPageToken to get new page of videos
-max_vids=50
+#max_vids=50
+vids_per_page=10
 
 echo "Enter youtube user name:"
 read user_name
@@ -29,7 +33,7 @@ do
   read user_name
 done
 
-echo "How many videos do you want to download(max "$max_vids")?"
+echo "How many videos do you want to download?"
 read count
 
 until [[ $count =~ ^[\-0-9]+$ ]] && (( $count > 0))
@@ -38,35 +42,69 @@ do
   read count
 done
 
-if (( $count > $max_vids ))
-then
-  echo "Defaulting videos count to "$max_vids". You can download maximum "$max_vids" videos."
-  count=$max_vids
-fi
-
-user_uploads_key=$(curl --silent  'https://www.googleapis.com/youtube/v3/channels?part=contentDetails&forUsername='$user_name'&key='$api_key | jq '.items[0].contentDetails.relatedPlaylists.uploads')
-clear_uploads_key=$(echo $user_uploads_key | cut -d '"' -f 2)
+user_uploads_key=$(curl --silent $api_base'/'$api_version'/channels?part=contentDetails&forUsername='$user_name'&key='$api_key | jq '.items[0].contentDetails.relatedPlaylists.uploads')
+clean_uploads_key=$(echo $user_uploads_key | cut -d '"' -f 2)
 
 
+until [ "$done" == "true" ]
+do  
+  ((i++))
+  if [ -z "$next_page" ]
+  then
+    next_page=$(curl --silent $api_base'/'$api_version'/playlistItems?part=contentDetails&playlistId='$clean_uploads_key'&maxResults='$vids_per_page'&key='$api_key | jq '.nextPageToken' | cut -d '"' -f 2)
+    
+    user_videos_list=$(curl --silent $api_base'/'$api_version'/playlistItems?part=contentDetails&playlistId='$clean_uploads_key'&maxResults='$vids_per_page'&key='$api_key)
+  else
+    user_videos_list=$(curl --silent $api_base'/'$api_version'/playlistItems?part=contentDetails&playlistId='$clean_uploads_key'&maxResults='$vids_per_page'&pageToken='$next_page'&key='$api_key)
+    
+    next_page=$(curl --silent $api_base'/'$api_version'/playlistItems?part=contentDetails&playlistId='$clean_uploads_key'&maxResults='$vids_per_page'&pageToken='$next_page'&key='$api_key | jq '.nextPageToken' | cut -d '"' -f 2)
+  fi
+  
+  for (( k=0; k<$vids_per_page; k++ ))
+  do
+    vid_pos=$(($k+($i-1)*$vids_per_page))
+    vids_queue[$vid_pos]=$(echo $user_videos_list | jq '.items['$k'].contentDetails.videoId' | cut -d '"' -f 2)
+    ((saved_vids++))
+  done
 
-user_videos_list=$(curl --silent  'https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&playlistId='$clear_uploads_key'&maxResults='$count'&key='$api_key)
-
-for (( i=0; i<$count; i++ ))
-do
-  vids_queue[$i]=$(echo $user_videos_list | jq '.items['$i'].contentDetails.videoId' | cut -d '"' -f 2)
+  echo "Fetching channel videos... ("$saved_vids"/"$count")"
+  
+  if (( $count < $saved_vids ))
+  then
+    done="true"
+    for v in ${!vids_queue[*]}
+    do
+      printf "%d:%s\n" $v ${vids_queue[$v]}
+    done
+  fi
 done
 
 dir=$user_name
 mkdir -p $dir
 cd $dir
 
+# TODO : think about changing method of using youtube-dl
+# instead of casting youtube-dl for each video, make a list to cast it once
+# this will result in possibility to use almost all youtube-dl arguments
+# for now for example reverse order wouldn't work because each vid is taken separate~
 for i in ${!vids_queue[*]}
 do
+  if (( $i >= $count ))
+  then
+    break
+  fi
+  
   current_vid=${vids_queue[$i]}
-  if [ $current_vid != null ]
-  then  
-    youtube-dl "$@" http://youtube.com/watch?v=$current_vid
-    ((d_cnt++))
+# TODO : one of these ifs seems to be unnecessary
+  if ! [ -z "$current_vid" ] 
+  then
+    if [ "$current_vid" != null ]
+    then
+      youtube-dl "$@" http://youtube.com/watch?v=$current_vid
+      ((d_cnt++))
+      echo " "
+      echo "Downloading "$current_vid"("$d_cnt"/"$count")."
+    fi
   fi
 done
 
