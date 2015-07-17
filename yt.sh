@@ -98,6 +98,10 @@ create_directory(){
 
 download_vids(){
   # Downloads all vids from the list one after another
+  
+  # start date to calculate time to finish downloading
+  start=$(date +%s)
+
   for i in ${!vids_queue[*]}
   do
     if (( $i >= $count ))
@@ -107,13 +111,17 @@ download_vids(){
     
     current_vid=${vids_queue[$i]}
     
-    # TODO : one of these ifs seems to be unnecessary
     if ! [ -z "$current_vid" ] 
     then
       if [ "$current_vid" != null ]
       then
         ((d_cnt++))
-        echo -ne "Downloading "$current_vid"("$d_cnt"/"$count")...\r"
+        time_now=$(date +%s)
+        time_from_start=$(($time_now-$start))
+        avg_time=$(($time_from_start/$d_cnt))
+        vids_left=$(($count-$d_cnt))
+        time_left=$(($avg_time*($vids_left+1)))
+        echo -e "Downloading "$current_vid"("$d_cnt"/"$count"). ETA: "$time_left" AVG: "$avg_time"\r"
         youtube-dl "$@" -q --console-title http://youtube.com/watch?v=$current_vid
       fi
     fi
