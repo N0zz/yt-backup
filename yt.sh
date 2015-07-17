@@ -83,6 +83,10 @@ dir=$user_name
 mkdir -p $dir
 cd $dir
 
+# TODO : think about changing method of using youtube-dl
+# instead of casting youtube-dl for each video, make a list to cast it once
+# this will result in possibility to use almost all youtube-dl arguments
+# for now for example reverse order wouldn't work because each vid is taken separate~
 for i in ${!vids_queue[*]}
 do
   if (( $i >= $count ))
@@ -91,7 +95,8 @@ do
   fi
   
   current_vid=${vids_queue[$i]}
-  if ! [ -z "$current_vid" ] # TODO : one of these ifs seems to be unnecessary
+# TODO : one of these ifs seems to be unnecessary
+  if ! [ -z "$current_vid" ] 
   then
     if [ "$current_vid" != null ]
     then
