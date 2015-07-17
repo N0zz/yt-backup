@@ -58,7 +58,7 @@ request_uploads_key(){
 
 request_vids_list(){
   # Get list of vidoes ids to download
-  until [ "$done" == "true" ]; do  
+  until [ "$done" == "true" ]; do
     ((i++))
     if [ -z "$next_page" ]; then
       local final=$api_base'/'$api_version
@@ -68,7 +68,7 @@ request_vids_list(){
       next_page=$(curl --silent $final \
                 | jq '.nextPageToken' \
                 | cut -d '"' -f 2)
-      
+
       final=$api_base'/'$api_version
       final+='/playlistItems?part=contentDetails&playlistId='
       final+=$clean_uploads_key'&maxResults='$vids_per_page'&key='$api_key
@@ -79,7 +79,7 @@ request_vids_list(){
       final+=$clean_uploads_key'&maxResults='$vids_per_page
       final+='&pageToken='$next_page'&key='$api_key
       user_videos_list=$(curl --silent $final)
-      
+
       final=$api_base'/'$api_version
       final+='/playlistItems?part=contentDetails&playlistId='
       final+=$clean_uploads_key'&maxResults='$vids_per_page
@@ -88,7 +88,7 @@ request_vids_list(){
                 | jq '.nextPageToken' \
                 | cut -d '"' -f 2)
     fi
-    
+
     for (( k=0; k<$vids_per_page; k++ )); do
       vid_pos=$(($k+($i-1)*$vids_per_page))
       vids_queue[$vid_pos]=$(echo $user_videos_list \
@@ -99,10 +99,9 @@ request_vids_list(){
 
     echo -ne "Fetching channel vids ("$saved_vids"/"$count")...\r"
 
-  
     if (( $count < $saved_vids )); then
       done="true"
-      # Prints videos list for debugging purposes  
+      # Prints videos list for debugging purposes
 #     for v in ${!vids_queue[*]}; do
 #       printf "%d:%s\n" $v ${vids_queue[$v]}
 #     done
@@ -123,14 +122,14 @@ calculate_time_left(){
   avg_time=$(($time_from_start/$d_cnt))
   vids_left=$(($count-$d_cnt))
   time_left=$(($avg_time*($vids_left+1)))
-  
+
   ((sec=time_left%60, time_left/=60, min=time_left%60, hrs=time_left/60))
   eta=$(printf "%d:%02d:%02d" $hrs $min $sec)
 }
 
 download_vids(){
   # Downloads all vids from the list one after another
-  
+
   # start date to calculate time to finish downloading
   start=$(date +%s)
 
@@ -138,15 +137,15 @@ download_vids(){
     if (( $i >= $count )); then
       break
     fi
-    
+
     current_vid=${vids_queue[$i]}
-    
+
     if ! [ -z "$current_vid" ]; then
       if [ "$current_vid" != null ]; then
         ((d_cnt++))
-        
+
         calculate_time_left
-        
+
         echo -ne "Downloading "$current_vid"("$d_cnt"/"$count") ETA: "$eta"\r"
         local final=http://youtube.com/watch?v=
         final+=$current_vid
@@ -158,11 +157,11 @@ download_vids(){
 
 echo_final_info(){
   # Prints info about downloaded/not downloaded videos and lists them
- 
+
   ((sec=time_from_start%60, time_from_start/=60))
   ((min=time_from_start%60, hrs=time_from_start/60))
   total_time=$(printf "%d hours %02d minutes and %02d seconds" $hrs $min $sec)
-  
+
   if [ -z "$d_cnt" ]; then
     echo 'Could not download any video. Does this channel exist?'
     cd ..
