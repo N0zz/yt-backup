@@ -22,7 +22,7 @@ api_version='v3'
 # max vids is 50 for now, if you want more google api
 # requires to use nextPageToken to get new page of videos
 #max_vids=50
-vids_per_page=5
+vids_per_page=10
 
 echo "Enter youtube user name:"
 read user_name
@@ -66,6 +66,8 @@ do
     vids_queue[$vid_pos]=$(echo $user_videos_list | jq '.items['$k'].contentDetails.videoId' | cut -d '"' -f 2)
     ((saved_vids++))
   done
+
+  echo "Fetching channel videos... ("$saved_vids"/"$count")"
   
   if (( $count < $saved_vids ))
   then
@@ -94,6 +96,7 @@ do
     if [ "$current_vid" != null ]
     then
       youtube-dl "$@" http://youtube.com/watch?v=$current_vid
+      echo "Downloading "$current_vid"("$d_cnt"/"$count")."
       ((d_cnt++))
     fi
   fi
