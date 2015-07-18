@@ -5,6 +5,12 @@ Simple youtube movies backup script.
 http://showterm.io/d5b10edcc7a3cb07ec86e
 
 # Info
+On debian simply use:
+`sudo apt-get install jq youtube-dl curl`
+
+Using curl to get data from google api.
+https://github.com/bagder/curl
+
 Using jq to decode json data from google api.  
 http://stedolan.github.io/jq/  
   
