@@ -28,22 +28,26 @@ readonly api_version='v3'
 readonly vids_per_page=50
 
 read_data(){
-  # Get channel name and videos count
-  echo "Enter youtube user name:"
-  read user_name
+# Get channel name and videos count
 
-  while [ -z "$user_name" ]; do
-    echo 'User name can not be empty:'
-    read user_name
-  done
+  user_name=$1
+  count=$2
 
-  echo "How many videos do you want to download?"
-  read count
+  if [[ -z "$user_name" ]]; then
+    echo 'You have to give user name and videos count as arguments.'
+    echo 'Example: ./yt.sh Username 15'
+    ((err+=1))
+  fi
 
-  until [[ $count =~ ^[\-0-9]+$ ]] && (( $count > 0)); do
-    echo 'Wrong value, it has to be positive integer. Try again:'
-    read count
-  done
+  if ! [[ $count =~ ^[\-0-9]+$ ]] || [[ $count < 1 ]]; then
+    echo 'Wrong value, second argument has to be a positive integer.'
+    ((err+=2))
+  fi
+
+  if [[ $err > 0 ]]; then
+    echo 'Exit code: ['$err']'
+    exit $err
+  fi
 }
 
 request_uploads_key(){
@@ -149,7 +153,7 @@ download_vids(){
         echo -ne "Downloading "$current_vid"("$d_cnt"/"$count") ETA: "$eta"\r"
         local final=http://youtube.com/watch?v=
         final+=$current_vid
-        youtube-dl "$@" -q --console-title $final
+        youtube-dl "${@:3}" --console-title $final
       fi
     fi
   done
@@ -182,12 +186,12 @@ echo_final_info(){
 }
 
 main(){
-  read_data
+  read_data $@
   request_uploads_key
   request_vids_list
   create_directory
-  download_vids
+  download_vids $@
   echo_final_info
 }
 
-main
+main $@
