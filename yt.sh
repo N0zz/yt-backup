@@ -25,7 +25,7 @@ readonly api_version='v3'
 # max vids is 50 for now, if you want more google api
 # requires to use nextPageToken to get new page of videos
 #max_vids=50
-readonly vids_per_page=5
+readonly vids_per_page=50
 
 read_data(){
   # Get channel name and videos count
