@@ -16,5 +16,5 @@ You can simply use all youtube-dl functions, exampe:
 Will results in using youtube-dl like this:  
 youtube-dl -s [URL]  
   
-Google api key can be generated here(requires enables YT APIs):  
+Google api key can be generated here(requires enabled YT APIs):  
 https://console.developers.google.com/project  
