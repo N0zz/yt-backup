@@ -153,7 +153,7 @@ download_vids(){
         echo -ne "Downloading "$current_vid"("$d_cnt"/"$count") ETA: "$eta"\r"
         local final=http://youtube.com/watch?v=
         final+=$current_vid
-        youtube-dl "${@:3}" --console-title $final
+        youtube-dl "${@:3}" -q --console-title $final
       fi
     fi
   done
