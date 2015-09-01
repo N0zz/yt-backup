@@ -1,4 +1,5 @@
 #!/bin/bash
+# New device connection test commit.
 #
 # Using jq to decode json data from google api.
 #  http://stedolan.github.io/jq/
